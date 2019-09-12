@@ -167,9 +167,6 @@ function showTestExportDialog(event, queries) {
       if (!result) return;
 
       // creates the files in the tests folder
-      // createTestFile('.env', env);
-      //generate tests
-      console.log(queries);
       createTestFile('tests.js', buildExportTestSuite.createTest(queries[0], queries[1]));
 
       //make a new output function that is an fs WRITE with the same data.
@@ -190,13 +187,11 @@ function showTestExportDialog(event, queries) {
 
 //listener for Apollo Server export button being clicked
 ipcMain.on('show-export-dialog', (event, gqlSchema, gqlResolvers, sqlScripts, env, queries) => {
-  console.log('show-export-dialog => ', queries);
   showExportDialog(event, gqlSchema, gqlResolvers, sqlScripts, env, queries);
 });
 
 //listener for test export button being clicked
 ipcMain.on('show-test-export-dialog', (event, queries) => {
-  console.log('show-test-export-dialog => ', queries);
   showTestExportDialog(event, queries);
 });
 
@@ -207,42 +202,19 @@ ipcMain.on('show-test-export-dialog', (event, queries) => {
 //   pgQuery();
 // }
 
-ipcMain.on('import-tables', (event, env) => {
-  let tables;
- pgQuery(tables)
+ipcMain.on('import-tables', (event, uri) => {
+ pgQuery(uri)
   .then((tables) => {
-    // console.log("tables (main):", tables)
     event.reply('tables-imported', tables)
   })
   .catch(err => console.error("Error importing tables from postgres"))
 })
-//--------------------- CREATE ENV FILE -------------------//
-
-async function createEnvFile(env) {
-  try {
-    fs.writeFileSync(path.join(__dirname, '/.env'), env, 'utf8')
-  } catch (err) {
-    return console.error(err);
-  }
-}
-
-ipcMain.on('create-env-file', (event, env) => {
-  console.log('create env file URI: ', env);
-  createEnvFile(env)
-  .then(res => {
-    event.reply('env-file-created');
-    console.log('env-file-created')
-  })
-  .catch(err => {
-    console.log('error occurred in createEnvFile promise')
-  })
-});
 
 //--------------------- MENU CUSTOMIZATION -------------------//
 
 // customizes the about option in the menu bar
 const originalTeam = 'Alena Budzko, Bryan Fong, Rodolfo Guzman, Jarred Jack Harewood, Geoffrey Lin';
-const contributors = 'Haris Hambasic, Michelle Moody, Jessica Vaughan, Vance Wallace';
+const contributors = 'Haris Hambasic, Michele Moody, Jessica Vaughan, Vance Wallace';
 app.setAboutPanelOptions({applicationName: 'ProtoGraphQL', applicationVersion: '2.0', copyright: 'MIT License', credits: `Original Team\n${originalTeam}\n\nAdditional Contributors\n${contributors}`, website: 'https://github.com/oslabs-beta/protographql', iconPath: './public/assets/pictures/icon/icon.png'});
 
 // set options for custom menu feature
