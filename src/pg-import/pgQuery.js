@@ -1,12 +1,10 @@
 // const pool = require('./sqlPool');
 const { Pool } = require('pg');
-const dotenv = require('dotenv');
 
 
-const pgQuery = async function(fetchedTables) {
+const pgQuery = async function(uri) {
     //reads the .env config after latest update, allowing us to use new tables if a previous import has run
-    dotenv.config();
-    const URI = process.env.DB_URI
+    const URI = uri;
     
     const tableQuery = `
     SELECT table_name,
@@ -35,7 +33,7 @@ const pgQuery = async function(fetchedTables) {
       connectionString: URI,
       ssl: true,
     })
-    // console.log('db uri pre pool.connect:', URI)
+
     
     pool.connect((err, client, done) => {
       if (err) return console.log(`Error connecting to db, ${err}`);
@@ -45,23 +43,17 @@ const pgQuery = async function(fetchedTables) {
     
     let queryResults = await pool.query(tableQuery)
         .then(res => {
-            // console.log("pool: ",pool)
-            // console.log('db URI: ', URI)
-            // console.log('tableQuery: ',res.rows)
             const tableColumns = res.rows;
             return tableColumns;
         })
         .then(tableColumns => { 
             return pool.query(constraintQuery)
                     .then(res => {
-                        // console.log('constraintQuery: ',res.rows)
                         const result = res.rows;
                         for(let item of result){
-                            // console.log("tablecolumns: ", tableColumns)
                             let table = item.table_name;
                             let col = item.column_name;
                             for(let column of tableColumns){
-                            // console.log('column: ', column, "col: ", col)
                                 if(column.table_name == table && column.column_name == col){
                                     column.constraint = item.constraint_name;
                                 }
@@ -118,10 +110,8 @@ const pgQuery = async function(fetchedTables) {
                                 
                                 tables[index].fields.push(column)
                             })
-                                        // console.log("tables (pgquery): ", tables)
                                         fetchedTables = tables;
                                         return fetchedTables;
-                                        // console.log('final table column obj: ', tableColumns)
                 })
                 
             })

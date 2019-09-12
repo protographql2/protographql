@@ -170,7 +170,6 @@ function updateURL() {
   let url = document.getElementById('url').value;
   if (url.match(/http:\/\/.+/) || url.match(/https:\/\/.+/)) {
     dispatch({ type: ADD_APOLLO_SERVER_URI, payload: url });
-    console.log('test updateURL', apolloServerURI);
     document.querySelector('#endpointStatus').innerHTML = `Current endpoint: ${document.getElementById('url').value}`;
     document.querySelector('#endpointStatus').classList.remove('invisible');
     document.getElementById('url').value = '';

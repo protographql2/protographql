@@ -118,21 +118,18 @@ function DraggableDialog(props) {
     const URI = document.getElementById('dbInput').value;
     if (URI.slice(0, 11).toLowerCase() === 'postgres://' || URI.slice(0, 13).toLowerCase() === 'postgresql://') {
               // emitting message to electron window to open save dialog
-              ipc.send('create-env-file', buildENV(URI));
-              function importTables() {
-                const tables = {};
+              function importTables(uri) {
                 ipc.on('tables-imported', (event, arg) => {
-                  console.log("import tables, no async: ", arg)
                   dispatch({ type: IMPORT_TABLES, payload: arg})
                   dispatch({ type: SET_POP_UP, payload: '' })
                 })
-                ipc.send('import-tables', tables);
+                ipc.send('import-tables', uri);
               }
               //added to force table import to wait on env file creation
-              ipc.on('env-file-created', importTables);
+              importTables(URI);
             } else {
               console.log('That is not a valid input');
-              // document.querySelector('#error').classList.remove('invisible')
+              document.querySelector('#error').classList.remove('invisible')
             }
   }
   return (
@@ -168,6 +165,9 @@ function DraggableDialog(props) {
         <DBinput id='dbInput' placeholder='Enter your database URI here'></DBinput>
         <Submit onClick={setURI}>Connect</Submit>
         </ContentDiv>
+          <div style={{textAlign: "center"}}>
+            <p className="invisible" id="error">URI needs to start with "postgres://" or "postgresql://"</p>
+          </div>
         </div>
       </Dialog>
       </div>
